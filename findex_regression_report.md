@@ -107,10 +107,62 @@ The model is better at identifying those who *have* accounts (high recall = 93%)
 
 ![Regression Results](src/findex_logistic_regression_results.png)
 
-- **Top left:** Confusion matrix showing correct and misclassified individuals
-- **Top right:** ROC curve with AUC = 0.755
-- **Bottom left:** Forest plot of odds ratios with 95% confidence intervals
-- **Bottom right:** Predicted probability by income quintile and gender
+#### Panel 1 — Confusion Matrix (top left)
+
+A confusion matrix is a 2x2 table that compares the model's predictions against the actual outcomes for every individual in the test set (n = 28,500). It answers the question: *"When the model said someone has an account, was it right?"*
+
+|  | **Predicted: No Account** | **Predicted: Has Account** |
+|---|---|---|
+| **Actual: No Account** | 1,973 (True Negative) | 5,480 (False Positive) |
+| **Actual: Has Account** | 1,416 (False Negative) | 19,631 (True Positive) |
+
+Reading the four quadrants:
+
+- **True Positives (19,631):** The model correctly predicted these individuals have accounts, and they do. For example, a 35-year-old employed man with tertiary education and Q4 income — the model predicts P(Account) = 0.95, and he indeed holds an account.
+
+- **True Negatives (1,973):** The model correctly predicted these individuals do *not* have accounts. For example, a 16-year-old unemployed girl with primary education in Q1 income — the model predicts P(Account) = 0.18, and she indeed has no account.
+
+- **False Positives (5,480):** The model predicted "Has Account" but the person actually does not. For example, a 45-year-old employed man with secondary education and Q3 income — the model predicts P(Account) = 0.72, but he does not hold an account. These are individuals whose profile *looks* like they should be included, but they are not — perhaps due to factors the model does not capture (distrust of banks, geographic isolation, cultural barriers).
+
+- **False Negatives (1,416):** The model predicted "No Account" but the person actually has one. For example, a 20-year-old unemployed woman with primary education and Q1 income — the model predicts P(Account) = 0.22, yet she does have an account, perhaps through a mobile money service or a government inclusion programme.
+
+The **axes** of the confusion matrix are:
+- **Y-axis (rows):** The *actual* class — what we observe in the survey data.
+- **X-axis (columns):** The *predicted* class — what the model outputs.
+
+The diagonal (top-left to bottom-right) represents correct predictions; the off-diagonal cells are errors. A perfect model would have zeros in the off-diagonal cells.
+
+**Key insight from this matrix:** The model is conservative about predicting "No Account." Of the 7,453 individuals who truly have no account, it only identifies 1,973 of them (recall = 26%). It tends to over-predict inclusion, which is a consequence of the class imbalance — 74% of the dataset has accounts, so the model learns to "default" toward predicting inclusion.
+
+#### Panel 2 — ROC Curve (top right)
+
+The ROC (Receiver Operating Characteristic) curve visualises the trade-off between catching true positives and accidentally flagging false positives, across *all possible decision thresholds* from 0 to 1.
+
+**Axes:**
+- **X-axis — False Positive Rate (FPR):** Of all individuals who truly have *no* account, what fraction did the model incorrectly classify as "Has Account"? FPR = False Positives / (False Positives + True Negatives). Ranges from 0 (no false alarms) to 1 (all negatives misclassified).
+- **Y-axis — True Positive Rate (TPR), also called Recall or Sensitivity:** Of all individuals who truly *have* an account, what fraction did the model correctly identify? TPR = True Positives / (True Positives + False Negatives). Ranges from 0 (misses everyone) to 1 (catches everyone).
+
+**How to read the curve:**
+
+Each point on the blue curve represents one threshold setting. As the threshold decreases from 1.0 toward 0.0:
+- At **threshold = 0.99**: The model is extremely strict — it only classifies someone as "Has Account" when it is nearly certain. TPR is low (catches few), but FPR is also low (few false alarms). This point is near the bottom-left.
+- At **threshold = 0.50** (our default): The model uses a balanced cutoff. This is one specific point on the curve, roughly where our confusion matrix values come from.
+- At **threshold = 0.01**: The model classifies nearly everyone as "Has Account." TPR approaches 1.0 (catches everyone), but FPR also approaches 1.0 (massive false alarms). This point is near the top-right.
+
+**Reference lines and benchmarks:**
+- The **black dashed diagonal line** represents a random coin-flip classifier (AUC = 0.5). A model that guesses randomly would produce points along this line.
+- A **perfect classifier** would hug the top-left corner (TPR = 1.0, FPR = 0.0), giving AUC = 1.0.
+- Our model achieves **AUC = 0.755**, meaning it performs substantially better than random but has room for improvement.
+
+**Practical example of the trade-off:** Imagine a government programme that wants to identify unbanked citizens for a financial inclusion initiative. If they lower the threshold to 0.3 (classifying more people as "No Account"), they would catch more truly unbanked people (higher TPR for the negative class), but would also incorrectly flag some account-holders for outreach (higher FPR). The ROC curve helps decision-makers find the sweet spot for their use case.
+
+#### Panel 3 — Odds Ratios Forest Plot (bottom left)
+
+A horizontal bar chart showing the exponentiated logistic regression coefficients (odds ratios) with 95% confidence intervals. The **red dashed vertical line at OR = 1.0** is the line of no effect — variables with bars extending to the right of this line *increase* the odds of account ownership, while bars to the left would *decrease* them. Error bars show uncertainty: if the confidence interval crosses 1.0, the effect is not statistically significant (none of ours do).
+
+#### Panel 4 — Predicted Probability by Income and Gender (bottom right)
+
+A grouped bar chart showing the model's average predicted P(Account) for male and female individuals across each income quintile (Q1 to Q5). This visualises the interaction between income and gender. The X-axis shows income quintiles; the Y-axis shows predicted probability (0 to 1). The two bar colours distinguish Male and Female predictions, making the gender gap (or lack thereof) visible at each income level.
 
 ## 6. Conclusions
 
