@@ -57,5 +57,7 @@ htmlcov/
 .coverage.*
 coverage.xml
 
-#data   
+#data
 data/
+findex_data/
+findex_microdata.zip

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logistic Regression Simulator — Financial Inclusion</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f8f9fa; --card: #fff; --border: #dee2e6;
+    --accent: #2563eb; --accent-light: #dbeafe;
+    --positive: #16a34a; --negative: #dc2626;
+    --text: #1e293b; --muted: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); padding: 1.5rem;
+    max-width: 1200px; margin: 0 auto;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: .25rem; }
+  .subtitle { color: var(--muted); font-size: .9rem; margin-bottom: 1.5rem; }
+  .formula {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+    font-family: "Georgia", serif; font-size: .95rem; text-align: center;
+    line-height: 1.8;
+  }
+  .formula .math { font-style: italic; }
+  .formula .coef { font-weight: bold; color: var(--accent); }
+
+  .layout { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.25rem;
+  }
+  .panel h2 { font-size: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
+
+  .control { margin-bottom: 1.1rem; }
+  .control label {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: .85rem; font-weight: 600; margin-bottom: .3rem;
+  }
+  .control label span.val {
+    font-family: "SF Mono", "Consolas", monospace;
+    color: var(--accent); font-size: .85rem;
+  }
+  .control input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .control .hint { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+
+  .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  @media (max-width: 860px) { .charts { grid-template-columns: 1fr; } }
+  .chart-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem;
+  }
+  .chart-box h3 { font-size: .9rem; margin-bottom: .75rem; }
+  .chart-box canvas { width: 100% !important; height: 260px !important; }
+
+  /* Individuals Table */
+  .individuals { margin-top: 1.5rem; }
+  .individuals table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  .individuals th {
+    background: var(--bg); text-align: left; padding: .6rem .75rem;
+    border-bottom: 2px solid var(--border); font-weight: 600;
+  }
+  .individuals td { padding: .6rem .75rem; border-bottom: 1px solid var(--border); }
+  .individuals tr:hover td { background: var(--accent-light); }
+  .tag {
+    display: inline-block; padding: 2px 10px; border-radius: 12px;
+    font-size: .78rem; font-weight: 600;
+  }
+  .tag.pos { background: #dcfce7; color: var(--positive); }
+  .tag.neg { background: #fee2e2; color: var(--negative); }
+
+  .prob-bar-bg {
+    width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;
+  }
+  .prob-bar {
+    height: 100%; border-radius: 4px; transition: width .2s, background .2s;
+  }
+
+  .summary-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem; text-align: center;
+  }
+  .stat-card .num { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+  .stat-card .lbl { font-size: .78rem; color: var(--muted); margin-top: .2rem; }
+</style>
+</head>
+<body>
+
+<h1>Logistic Regression Simulator</h1>
+<p class="subtitle">Predicting Financial Inclusion — Global Findex 2025</p>
+
+<div class="formula" id="formulaDisplay"></div>
+
+<div class="layout">
+  <!-- LEFT: Controls -->
+  <div class="panel">
+    <h2>Model Parameters</h2>
+
+    <div class="control">
+      <label>Intercept (<span class="math">&beta;<sub>0</sub></span>) <span class="val" id="vIntercept">-1.78</span></label>
+      <input type="range" id="sIntercept" min="-5" max="2" step="0.01" value="-1.78">
+      <div class="hint">Base log-odds when all features are zero</div>
+    </div>
+
+    <div class="control">
+      <label>Age weight (<span class="math">&beta;<sub>age</sub></span>) <span class="val" id="vAge">0.023</span></label>
+      <input type="range" id="sAge" min="-0.1" max="0.1" step="0.001" value="0.023">
+      <div class="hint">Effect of each additional year of age</div>
+    </div>
+
+    <div class="control">
+      <label>Income weight (<span class="math">&beta;<sub>inc</sub></span>) <span class="val" id="vIncome">0.114</span></label>
+      <input type="range" id="sIncome" min="-1" max="1" step="0.001" value="0.114">
+      <div class="hint">Effect of moving up one income quintile (1-5)</div>
+    </div>
+
+    <div class="control">
+      <label>Education weight (<span class="math">&beta;<sub>edu</sub></span>) <span class="val" id="vEducation">0.80</span></label>
+      <input type="range" id="sEducation" min="-2" max="3" step="0.01" value="0.80">
+      <div class="hint">Effect of each education level (1=Primary, 2=Secondary, 3=Tertiary)</div>
+    </div>
+
+    <div class="control">
+      <label>Female weight (<span class="math">&beta;<sub>fem</sub></span>) <span class="val" id="vFemale">0.208</span></label>
+      <input type="range" id="sFemale" min="-2" max="2" step="0.001" value="0.208">
+      <div class="hint">Effect of being female (1) vs. male (0)</div>
+    </div>
+
+    <div class="control">
+      <label>Employed weight (<span class="math">&beta;<sub>emp</sub></span>) <span class="val" id="vEmployed">0.657</span></label>
+      <input type="range" id="sEmployed" min="-2" max="3" step="0.001" value="0.657">
+      <div class="hint">Effect of being in the workforce</div>
+    </div>
+
+    <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border);">
+    <h2>Classification</h2>
+
+    <div class="control">
+      <label>Decision threshold <span class="val" id="vThreshold">0.50</span></label>
+      <input type="range" id="sThreshold" min="0.05" max="0.95" step="0.01" value="0.50">
+      <div class="hint">P(account) above this = "Has Account"</div>
+    </div>
+
+    <button onclick="resetDefaults()" style="
+      width:100%; padding:.6rem; margin-top:.5rem;
+      background:var(--accent); color:#fff; border:none;
+      border-radius:6px; cursor:pointer; font-weight:600; font-size:.85rem;
+    ">Reset to Findex 2025 Estimates</button>
+  </div>
+
+  <!-- RIGHT: Visualisations -->
+  <div>
+    <div class="charts">
+      <div class="chart-box">
+        <h3>Sigmoid Curve (Age as x-axis)</h3>
+        <canvas id="sigmoidChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Probability by Income &amp; Education</h3>
+        <canvas id="heatChart"></canvas>
+      </div>
+    </div>
+
+    <div class="summary-row">
+      <div class="stat-card"><div class="num" id="statIncluded">0</div><div class="lbl">Has Account</div></div>
+      <div class="stat-card"><div class="num" id="statExcluded">0</div><div class="lbl">No Account</div></div>
+      <div class="stat-card"><div class="num" id="statRate">0%</div><div class="lbl">Inclusion Rate</div></div>
+    </div>
+
+    <div class="panel individuals" style="margin-top:1.25rem;">
+      <h2>Representative Individuals</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Profile</th><th>Age</th><th>Gender</th><th>Income</th>
+            <th>Education</th><th>Employed</th><th>P(Account)</th><th>Classification</th>
+          </tr>
+        </thead>
+        <tbody id="indivBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Representative Individuals ──
+const individuals = [
+  { name: "Young rural woman, low income",       age: 22, female: 1, inc: 1, edu: 1, emp: 0 },
+  { name: "Middle-aged employed man",             age: 40, female: 0, inc: 3, edu: 2, emp: 1 },
+  { name: "Educated urban professional",          age: 35, female: 0, inc: 4, edu: 3, emp: 1 },
+  { name: "Elderly low-income woman",             age: 68, female: 1, inc: 1, edu: 1, emp: 0 },
+  { name: "Young employed woman, mid income",     age: 28, female: 1, inc: 3, edu: 2, emp: 1 },
+  { name: "University student, no income",        age: 20, female: 0, inc: 1, edu: 3, emp: 0 },
+  { name: "Wealthy older man, primary edu",       age: 55, female: 0, inc: 5, edu: 1, emp: 1 },
+  { name: "Rural farmer, secondary edu",          age: 45, female: 0, inc: 2, edu: 2, emp: 1 },
+  { name: "Urban professional woman",             age: 32, female: 1, inc: 5, edu: 3, emp: 1 },
+  { name: "Teenage girl, no income",              age: 16, female: 1, inc: 1, edu: 1, emp: 0 },
+];
+
+const eduLabels = { 1: "Primary", 2: "Secondary", 3: "Tertiary" };
+const incLabels = { 1: "Q1 (Poorest)", 2: "Q2", 3: "Q3", 4: "Q4", 5: "Q5 (Richest)" };
+
+// ── Sigmoid ──
+function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+function getParams() {
+  return {
+    b0:  parseFloat(document.getElementById("sIntercept").value),
+    bA:  parseFloat(document.getElementById("sAge").value),
+    bI:  parseFloat(document.getElementById("sIncome").value),
+    bE:  parseFloat(document.getElementById("sEducation").value),
+    bF:  parseFloat(document.getElementById("sFemale").value),
+    bEm: parseFloat(document.getElementById("sEmployed").value),
+    thr: parseFloat(document.getElementById("sThreshold").value),
+  };
+}
+
+function logit(p, age, inc, edu, fem, emp) {
+  return p.b0 + p.bA * age + p.bI * inc + p.bE * edu + p.bF * fem + p.bEm * emp;
+}
+
+function prob(p, age, inc, edu, fem, emp) {
+  return sigmoid(logit(p, age, inc, edu, fem, emp));
+}
+
+// ── Charts ──
+const sigmoidCtx = document.getElementById("sigmoidChart").getContext("2d");
+const heatCtx    = document.getElementById("heatChart").getContext("2d");
+
+// Sigmoid chart: P(account) vs Age for a few profiles
+const sigmoidChart = new Chart(sigmoidCtx, {
+  type: "line",
+  data: {
+    labels: [],
+    datasets: [
+      { label: "Low income, Primary edu",   data: [], borderWidth: 2, pointRadius: 0, tension: .3 },
+      { label: "Mid income, Secondary edu",  data: [], borderWidth: 2, pointRadius: 0, tension: .3 },
+      { label: "High income, Tertiary edu",  data: [], borderWidth: 2, pointRadius: 0, tension: .3 },
+      { label: "Threshold", data: [], borderDash: [6,4], borderWidth: 1.5, pointRadius: 0,
+        borderColor: "#ef4444" },
+    ],
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { title: { display: true, text: "Age" } },
+      y: { title: { display: true, text: "P(Account)" }, min: 0, max: 1 },
+    },
+    plugins: { legend: { position: "bottom", labels: { boxWidth: 14, font: { size: 11 } } } },
+    animation: { duration: 150 },
+  },
+});
+
+// Grouped bar chart: Income x Education
+const heatChart = new Chart(heatCtx, {
+  type: "bar",
+  data: {
+    labels: ["Q1", "Q2", "Q3", "Q4", "Q5"],
+    datasets: [
+      { label: "Primary",   data: [], borderRadius: 3 },
+      { label: "Secondary", data: [], borderRadius: 3 },
+      { label: "Tertiary",  data: [], borderRadius: 3 },
+    ],
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { title: { display: true, text: "Income Quintile" } },
+      y: { title: { display: true, text: "P(Account)" }, min: 0, max: 1 },
+    },
+    plugins: { legend: { position: "bottom", labels: { boxWidth: 14, font: { size: 11 } } } },
+    animation: { duration: 150 },
+  },
+});
+
+// ── Update everything ──
+function update() {
+  const p = getParams();
+
+  // Update displayed values
+  document.getElementById("vIntercept").textContent  = p.b0.toFixed(2);
+  document.getElementById("vAge").textContent        = p.bA.toFixed(3);
+  document.getElementById("vIncome").textContent     = p.bI.toFixed(3);
+  document.getElementById("vEducation").textContent  = p.bE.toFixed(2);
+  document.getElementById("vFemale").textContent     = p.bF.toFixed(3);
+  document.getElementById("vEmployed").textContent   = p.bEm.toFixed(3);
+  document.getElementById("vThreshold").textContent  = p.thr.toFixed(2);
+
+  // Formula display
+  document.getElementById("formulaDisplay").innerHTML =
+    `<span class="math">ln(p / (1-p))</span> = ` +
+    `<span class="coef">${p.b0.toFixed(2)}</span> + ` +
+    `<span class="coef">${p.bA.toFixed(3)}</span> &times; Age + ` +
+    `<span class="coef">${p.bI.toFixed(3)}</span> &times; Income + ` +
+    `<span class="coef">${p.bE.toFixed(2)}</span> &times; Education + ` +
+    `<span class="coef">${p.bF.toFixed(3)}</span> &times; Female + ` +
+    `<span class="coef">${p.bEm.toFixed(3)}</span> &times; Employed`;
+
+  // ── Sigmoid curves ──
+  const ages = [];
+  for (let a = 15; a <= 85; a += 1) ages.push(a);
+  sigmoidChart.data.labels = ages;
+
+  // Profile: employed male
+  const profiles = [
+    { inc: 1, edu: 1, fem: 0, emp: 1 },
+    { inc: 3, edu: 2, fem: 0, emp: 1 },
+    { inc: 5, edu: 3, fem: 0, emp: 1 },
+  ];
+  for (let i = 0; i < 3; i++) {
+    const pr = profiles[i];
+    sigmoidChart.data.datasets[i].data = ages.map(a => prob(p, a, pr.inc, pr.edu, pr.fem, pr.emp));
+  }
+  sigmoidChart.data.datasets[3].data = ages.map(() => p.thr);
+  sigmoidChart.update();
+
+  // ── Income x Education bar chart (average person: age 40, male, employed) ──
+  for (let e = 0; e < 3; e++) {
+    heatChart.data.datasets[e].data = [1,2,3,4,5].map(
+      inc => prob(p, 40, inc, e + 1, 0, 1)
+    );
+  }
+  heatChart.update();
+
+  // ── Individuals table ──
+  const tbody = document.getElementById("indivBody");
+  tbody.innerHTML = "";
+  let included = 0;
+  individuals.forEach(ind => {
+    const pr = prob(p, ind.age, ind.inc, ind.edu, ind.female, ind.emp);
+    const cls = pr >= p.thr;
+    if (cls) included++;
+    const barColor = cls ? "var(--positive)" : "var(--negative)";
+    tbody.innerHTML += `<tr>
+      <td><strong>${ind.name}</strong></td>
+      <td>${ind.age}</td>
+      <td>${ind.female ? "Female" : "Male"}</td>
+      <td>${incLabels[ind.inc]}</td>
+      <td>${eduLabels[ind.edu]}</td>
+      <td>${ind.emp ? "Yes" : "No"}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="min-width:42px;font-family:monospace;font-weight:600">${(pr*100).toFixed(1)}%</span>
+          <div class="prob-bar-bg" style="flex:1">
+            <div class="prob-bar" style="width:${pr*100}%;background:${barColor}"></div>
+          </div>
+        </div>
+      </td>
+      <td><span class="tag ${cls ? 'pos' : 'neg'}">${cls ? "Has Account" : "No Account"}</span></td>
+    </tr>`;
+  });
+
+  // Summary stats
+  document.getElementById("statIncluded").textContent = included;
+  document.getElementById("statExcluded").textContent = individuals.length - included;
+  document.getElementById("statRate").textContent = ((included / individuals.length) * 100).toFixed(0) + "%";
+}
+
+function resetDefaults() {
+  document.getElementById("sIntercept").value = -1.78;
+  document.getElementById("sAge").value = 0.023;
+  document.getElementById("sIncome").value = 0.114;
+  document.getElementById("sEducation").value = 0.80;
+  document.getElementById("sFemale").value = 0.208;
+  document.getElementById("sEmployed").value = 0.657;
+  document.getElementById("sThreshold").value = 0.50;
+  update();
+}
+
+// Bind sliders
+document.querySelectorAll("input[type=range]").forEach(el => el.addEventListener("input", update));
+update();
+</script>
+</body>
+</html>

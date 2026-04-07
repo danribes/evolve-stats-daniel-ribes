@@ -43,6 +43,29 @@ def IQR_evolve(lista_datos: list):
     q3 = percentil_evolve(lista_datos, 75)
     return q3 - q1
 
+def skewness_evolve(lista_datos: list):
+    # Calcular la asimetría utilizando la fórmula de asimetría
+    media = media_evolve(lista_datos)
+    desviacion = desviacion_evolve(lista_datos)
+    n = len(lista_datos)
+    return (sum((x - media) ** 3 for x in lista_datos) / n) / (desviacion ** 3)
+
+def kurtosis_evolve(lista_datos: list):
+    # Calcular la curtosis utilizando la fórmula de curtosis
+    media = media_evolve(lista_datos)
+    desviacion = desviacion_evolve(lista_datos)
+    n = len(lista_datos)
+    return (sum((x - media) ** 4 for x in lista_datos) / n) / (desviacion ** 4) - 3 
+
+def numero_outliers_evolve(lista_datos: list):
+    # Calcular el número de outliers utilizando el método del rango intercuartílico (IQR)
+    q1 = percentil_evolve(lista_datos, 25)
+    q3 = percentil_evolve(lista_datos, 75)
+    iqr = q3 - q1
+    lower_bound = q1 - 1.5 * iqr
+    upper_bound = q3 + 1.5 * iqr
+    return sum(1 for x in lista_datos if x < lower_bound or x > upper_bound)
+
 
 
 
@@ -67,23 +90,45 @@ if __name__ == "__main__":
 
     print("Resultado edad:")
     print("-----------------------------")
-    print(media_evolve(edad))
-    print(mediana_evolve(edad))
-    print(percentil_evolve(edad, 50))
-    print(varianza_evolve(edad))
-    print(desviacion_evolve(edad))
-    print(IQR_evolve(edad))
+    print("media: ", media_evolve(edad))
+    print("mediana: ", mediana_evolve(edad))
+    print("percentil 50: ", percentil_evolve(edad, 50))
+    print("varianza: ", varianza_evolve(edad))
+    print("desviacion: ", desviacion_evolve(edad))
+    print("IQR: ", IQR_evolve(edad))
+    print("skewness: ", skewness_evolve(edad))
+    print("kurtosis: ", kurtosis_evolve(edad))
+    print("num outliers: ", numero_outliers_evolve(edad) )
+    print("Resultado salario:")
+    print("-----------------------------")
+    print("media: ", media_evolve(salario))
+    print("mediana: ", mediana_evolve(salario))
+    print("percentil 50: ", percentil_evolve(salario, 50))
+    print("varianza: ", varianza_evolve(salario))
+    print("desviacion: ", desviacion_evolve(salario))
+    print("IQR: ", IQR_evolve(salario))
+    print("skewness: ", skewness_evolve(salario))
+    print("kurtosis: ", kurtosis_evolve(salario))
+    print("num outliers: ", numero_outliers_evolve(salario))
 
-    print(media_evolve(salario))
-    print(mediana_evolve(salario))
-    print(percentil_evolve(salario, 50))
-    print(varianza_evolve(salario))
-    print(desviacion_evolve(salario))
-    print(IQR_evolve(salario))
+    print("Resultado experiencia:")
+    print("-----------------------------")
+    print("media: ", media_evolve(experiencia))
+    print("mediana: ", mediana_evolve(experiencia))
+    print("percentil 50: ", percentil_evolve(experiencia, 50))
+    print("varianza: ", varianza_evolve(experiencia))
+    print("desviacion: ", desviacion_evolve(experiencia))
+    print("IQR: ", IQR_evolve(experiencia))
+    print("skewness: ", skewness_evolve(experiencia))
+    print("kurtosis: ", kurtosis_evolve(experiencia))
+    print("num outliers: ", numero_outliers_evolve(experiencia))
+    print("skewness: ", skewness_evolve(experiencia))
+    print("kurtosis: ", kurtosis_evolve(experiencia))
+    print("num outliers: ", numero_outliers_evolve(experiencia))
 
-    print(media_evolve(experiencia))
-    print(mediana_evolve(experiencia))
-    print(percentil_evolve(experiencia, 50))
-    print(varianza_evolve(experiencia))
-    print(desviacion_evolve(experiencia))
-    print(IQR_evolve(experiencia))
+
+
+
+
+
+
