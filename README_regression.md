@@ -9,26 +9,33 @@ Binomial logistic regression predicting individual-level financial account owner
 source .venv/bin/activate
 
 # 2. Install dependencies
-pip install pandas numpy matplotlib seaborn scikit-learn statsmodels
+pip install -r requirements.txt
 
-# 3. Run the regression analysis
-python findex_logistic_regression.py
+# 3. Run the regression analysis (from project root)
+python src/findex_logistic_regression.py
 
 # 4. Open the interactive simulator
-open logistic_regression_simulator.html    # macOS
-xdg-open logistic_regression_simulator.html # Linux
+open src/logistic_regression_simulator.html    # macOS
+xdg-open src/logistic_regression_simulator.html # Linux
 ```
 
 ## Project Files
 
-| File | Description |
-|---|---|
-| `Predicting Financial Inclusion with Logistic Regression.md` | Project proposal and methodology |
-| `findex_logistic_regression.py` | Full regression pipeline (data prep, VIF, model, evaluation, plots) |
-| `findex_regression_report.md` | Detailed results report with tables and interpretation |
-| `findex_logistic_regression_results.png` | 4-panel visualisation (confusion matrix, ROC, odds ratios, income x gender) |
-| `logistic_regression_simulator.html` | Interactive browser-based logistic regression simulator |
-| `findex_data/` | Downloaded Findex 2025 microdata (CSV) |
+```
+evolve_stats/
+├── data/
+│   └── findex_microdata_2025_labelled.csv   # Findex 2025 microdata (gitignored)
+├── src/
+│   ├── findex_logistic_regression.py        # Full regression pipeline
+│   ├── findex_logistic_regression_results.png # 4-panel visualisation
+│   ├── logistic_regression_simulator.html   # Interactive browser simulator
+│   └── medidas.py                           # Statistical utility functions
+├── Predicting Financial Inclusion with Logistic Regression.md  # Project proposal
+├── findex_regression_report.md              # Detailed results report
+├── README_regression.md                     # This file
+├── README_medidas.md                        # README for medidas.py
+└── requirements.txt                         # Python dependencies
+```
 
 ## Dataset
 
@@ -50,7 +57,7 @@ xdg-open logistic_regression_simulator.html # Linux
 
 ## Methodology
 
-### Pipeline Steps (`findex_logistic_regression.py`)
+### Pipeline Steps (`src/findex_logistic_regression.py`)
 
 1. **Data loading** — Reads the Findex microdata CSV, selects modelling variables
 2. **Recoding** — Converts raw survey codes to interpretable binary/categorical values
@@ -90,7 +97,7 @@ See `findex_regression_report.md` for the full analysis and interpretation.
 
 ## Interactive Simulator
 
-Open `logistic_regression_simulator.html` in any browser. It provides:
+Open `src/logistic_regression_simulator.html` in any browser. It provides:
 
 - **Coefficient sliders** — Adjust each weight and the intercept to see how they shift the probability curve
 - **Sigmoid curve** — Shows P(Account) vs. Age for three income/education profiles

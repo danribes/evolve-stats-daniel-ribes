@@ -105,7 +105,7 @@ The model is better at identifying those who *have* accounts (high recall = 93%)
 
 ### Visualisation
 
-![Regression Results](findex_logistic_regression_results.png)
+![Regression Results](src/findex_logistic_regression_results.png)
 
 - **Top left:** Confusion matrix showing correct and misclassified individuals
 - **Top right:** ROC curve with AUC = 0.755

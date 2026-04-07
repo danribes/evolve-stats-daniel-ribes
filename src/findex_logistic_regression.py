@@ -29,7 +29,7 @@ print("1. DATA LOADING & PREPARATION")
 print("=" * 60)
 
 raw = pd.read_csv(
-    "findex_data/findex_microdata_2025_labelled.csv",
+    "../data/findex_microdata_2025_labelled.csv",
     usecols=[
         "account", "age", "female", "inc_q", "educ",
         "emp_in", "urbanicity", "economy", "economycode", "regionwb", "wgt",
@@ -243,7 +243,7 @@ axes[1, 1].set_ylim(0, 1)
 
 plt.tight_layout()
 plt.savefig("findex_logistic_regression_results.png", dpi=150, bbox_inches="tight")
-print("\nFigure saved: findex_logistic_regression_results.png")
+print("\nFigure saved: src/findex_logistic_regression_results.png")
 
 # ──────────────────────────────────────────────
 # 8. CONCLUSIONS
