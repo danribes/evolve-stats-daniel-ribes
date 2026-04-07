@@ -191,31 +191,27 @@ The improvement is marginal in aggregate metrics, but the interactions reveal im
 
 ## 5. Temporal Comparison: Findex 2021 vs 2025
 
-### 5.1 Data Limitation
+The full coefficient-level temporal comparison has now been completed using individual-level microdata from both Findex rounds (2021: n = 142,887; 2025: n = 144,090). The detailed analysis is in a dedicated report: [`findex_2021_vs_2025_report.md`](findex_2021_vs_2025_report.md).
 
-The Findex 2021 individual-level microdata requires free registration at the [World Bank Microdata Library](https://microdata.worldbank.org/index.php/catalog/4607). Without it, we cannot directly compare logistic regression coefficients. Instead, we compare published aggregate statistics from the World Bank's Findex reports.
+### 5.1 Key Findings
 
-### 5.2 Aggregate Comparison
-
-| Metric | Findex 2021 | Findex 2025 | Change |
+| Predictor | OR (2021) | OR (2025) | Trend |
 |---|---|---|---|
-| Global account ownership | 76% | 74% | -2 pp |
-| Male account ownership | 78% | 70% | -8 pp |
-| Female account ownership | 74% | 78% | +4 pp |
-| Gender gap | 4 pp (M > F) | 8 pp (F > M) | Reversed |
-| High income | 97% | 93% | -4 pp |
-| Sub-Saharan Africa | 55% | 62% | **+7 pp** |
-| South Asia | 68% | 70% | +2 pp |
+| Tertiary education | 6.32 | **11.76** | Near-doubled |
+| Secondary education | 2.56 | **3.33** | Strengthened |
+| Internet access | 1.84 | **2.39** | Fastest-growing predictor |
+| Mobile phone | 2.48 | 2.38 | Stable (near saturation) |
+| Employed | 1.91 | 1.92 | Stable |
+| Income quintile | 1.15 | 1.13 | Stable |
+| Age (+1 year) | 1.01 | 1.02 | Slight increase |
 
-### 5.3 Interpretation
+- **Education has become the dominant discriminator** as the remaining unbanked are increasingly concentrated among the least educated.
+- **Internet access is the fastest-growing predictor**, reflecting the shift from mobile-first to internet-dependent financial services.
+- **South Asia shows the most dramatic coefficient shifts**: employment strengthened (OR: 1.67 to 2.46), education weakened (OR: 2.75 to 1.77), and income became significant — consistent with government inclusion programmes.
+- **Sub-Saharan Africa's coefficients are remarkably stable**, with broad-based gains driven by mobile money.
+- **The gender gap persists in South Asia (~9 pp) and worsened in MENA** (-16 to -18.6 pp).
 
-**Caution:** These comparisons should be interpreted carefully. The Findex 2025 dataset covers 140 economies with a different sampling frame than the 2021 round (139 economies). Small changes in country composition and sampling weights can shift aggregate figures. The apparent "decline" in global and high-income account ownership may reflect sampling differences rather than genuine reversals.
-
-**Sub-Saharan Africa shows clear progress** (+7 pp), consistent with the rapid growth of mobile money platforms (M-Pesa, MTN Mobile Money, Airtel Money) across the continent. Our regression confirms that mobile phone ownership is a strong predictor (OR = 2.38) in the current data.
-
-**The gender gap appears to have reversed** (from 4 pp favouring males in 2021 to 8 pp favouring females in 2025). This is likely a compositional effect — the 2025 sample may overrepresent economies where women's financial inclusion has improved. Our interaction analysis (Section 4) shows that the gender gap is highly region-dependent, making a single global number misleading.
-
-**A full temporal comparison** — re-estimating the logistic model on 2021 microdata and comparing coefficient magnitudes — would allow us to test whether the effect of education, employment, or mobile access has strengthened or weakened over time. This remains an open recommendation pending access to the 2021 microdata.
+See the full report for regional breakdowns, enhanced model comparisons, and 5 additional visualisations.
 
 ---
 
